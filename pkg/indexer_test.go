@@ -6,6 +6,8 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	c "github.com/theredditbandit/pman/constants"
+	"github.com/theredditbandit/pman/pkg/db"
 )
 
 func TestIndexDir(t *testing.T) {
@@ -64,4 +66,42 @@ func TestIndexDir(t *testing.T) {
 	absNested, _ := filepath.Abs(nestedProjectDir)
 	_, nestedIndexed := projDirs[absNested]
 	assert.False(t, nestedIndexed, "nested project should not be indexed")
+}
+
+func TestInitDirs_PreservesStatus(t *testing.T) {
+	db.DeleteDb(db.DBName)
+	defer db.DeleteDb(db.DBName)
+	// Create a temporary directory for our test setup
+	tmpDir, err := os.MkdirTemp("", "pman-test-")
+	assert.NoError(t, err)
+	defer os.RemoveAll(tmpDir)
+
+	// Create a directory structure for testing
+	project1Dir := filepath.Join(tmpDir, "project1")
+	err = os.Mkdir(project1Dir, 0755)
+	assert.NoError(t, err)
+	_, err = os.Create(filepath.Join(project1Dir, "README.md"))
+	assert.NoError(t, err)
+
+	// --- First run of InitDirs ---
+	err = InitDirs([]string{tmpDir})
+	assert.NoError(t, err)
+
+	// --- Check status is "indexed" ---
+	status, err := db.GetRecord(db.DBName, "project1", c.StatusBucket)
+	assert.NoError(t, err)
+	assert.Equal(t, "indexed", status)
+
+	// --- Manually change status ---
+	err = db.UpdateRec(db.DBName, "project1", "active", c.StatusBucket)
+	assert.NoError(t, err)
+
+	// --- Second run of InitDirs ---
+	err = InitDirs([]string{tmpDir})
+	assert.NoError(t, err)
+
+	// --- Check status is still "active" ---
+	status, err = db.GetRecord(db.DBName, "project1", c.StatusBucket)
+	assert.NoError(t, err)
+	assert.Equal(t, "active", status, "InitDirs should not overwrite existing status")
 }
