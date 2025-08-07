@@ -89,30 +89,37 @@ func InitDirs(args []string) error {
 func indexDir(path string) (map[string]string, error) {
 	identifier := "readme"
 	projDirs := make(map[string]string)
-	err := filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() && info.Name() == ".git" {
-			pname := filepath.Dir(path)
-			absPath, _ := filepath.Abs(pname)
-			projDirs[absPath] = "indexed"
-			return filepath.SkipDir
-		}
-		if !info.IsDir() {
-			fileName := strings.ToLower(info.Name())
-			if strings.Contains(fileName, identifier) {
-				pname := filepath.Dir(path)
-				absPath, _ := filepath.Abs(pname)
-				projDirs[absPath] = "indexed"
-				return filepath.SkipDir
-			}
+
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return nil, fmt.Errorf("could not read directory %s: %w", path, err)
+	}
+
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			continue
 		}
 
-		return nil
-	})
-	if err != nil {
-		return nil, err
+		subDirPath := filepath.Join(path, entry.Name())
+		subEntries, err := os.ReadDir(subDirPath)
+		if err != nil {
+			log.Printf("could not read subdirectory %s: %v", subDirPath, err)
+			continue
+		}
+
+		for _, subEntry := range subEntries {
+			if (subEntry.IsDir() && subEntry.Name() == ".git") ||
+				(!subEntry.IsDir() && strings.Contains(strings.ToLower(subEntry.Name()), identifier)) {
+				absPath, err := filepath.Abs(subDirPath)
+				if err != nil {
+					log.Printf("could not get absolute path for %s: %v", subDirPath, err)
+					break // break from inner loop
+				}
+				projDirs[absPath] = "indexed"
+				break // break from inner loop
+			}
+		}
 	}
+
 	return projDirs, nil
 }
