@@ -103,7 +103,7 @@ func indexDir(path string) (map[string]string, error) {
 		subDirPath := filepath.Join(path, entry.Name())
 		subEntries, err := os.ReadDir(subDirPath)
 		if err != nil {
-			errs = append(errs, fmt.Errorf("could not read subdirectory %s: %w", subDirPath, err))
+			log.Printf("could not read subdirectory %s: %v", subDirPath, err)
 			continue
 		}
 
