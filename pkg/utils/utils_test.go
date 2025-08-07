@@ -291,3 +291,148 @@ func Test_GetLastModifiedTime(t *testing.T) {
 		assert.Equal(t, expectedMsg, actual)
 	})
 }
+func TestGetProjectPath(t *testing.T) {
+	t.Run("should return the project path", func(t *testing.T) {
+		// setup
+		err := os.Mkdir(projectPath, 0755)
+		require.NoError(t, err)
+		_, err = os.Create(projectPath + "/README.md")
+		require.NoError(t, err)
+		err = db.WriteToDB(dbname, map[string]string{projectName: projectPath}, c.ProjectPaths)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := db.DeleteDb(dbname)
+			require.NoError(t, err)
+			_ = os.RemoveAll(projectPath)
+		})
+
+		// execute
+		path, err := utils.GetProjectPath(dbname, projectName)
+
+		// verify
+		require.NoError(t, err)
+		assert.Equal(t, "project_name/README.md", path)
+	})
+
+	t.Run("should return the project path when an alias is used", func(t *testing.T) {
+		// setup
+		alias := "p"
+		err := os.Mkdir(projectPath, 0755)
+		require.NoError(t, err)
+		_, err = os.Create(projectPath + "/README.md")
+		require.NoError(t, err)
+		err = db.WriteToDB(dbname, map[string]string{alias: projectName}, c.ProjectAliasBucket)
+		require.NoError(t, err)
+		err = db.WriteToDB(dbname, map[string]string{projectName: projectPath}, c.ProjectPaths)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			err := db.DeleteDb(dbname)
+			require.NoError(t, err)
+			_ = os.RemoveAll(projectPath)
+		})
+
+		// execute
+		path, err := utils.GetProjectPath(dbname, alias)
+
+		// verify
+		require.NoError(t, err)
+		assert.Equal(t, "project_name/README.md", path)
+	})
+
+	t.Run("should return an error when the project does not exist", func(t *testing.T) {
+		// execute
+		path, err := utils.GetProjectPath(dbname, "non-existent-project")
+
+		// verify
+		require.Error(t, err)
+		assert.Empty(t, path)
+	})
+}
+
+func TestUpdateLastEditedTime(t *testing.T) {
+	t.Run("should update the last edited time", func(t *testing.T) {
+		// setup
+		t.Cleanup(func() {
+			err := db.DeleteDb(db.DBName)
+			require.NoError(t, err)
+		})
+
+		// execute
+		err := utils.UpdateLastEditedTime()
+
+		// verify
+		require.NoError(t, err)
+		_, err = db.GetRecord(db.DBName, "lastRefreshTime", c.ConfigBucket)
+		require.NoError(t, err)
+	})
+}
+
+func TestDayPassed(t *testing.T) {
+	t.Run("should return true if a day has passed", func(t *testing.T) {
+		// setup
+		oneDayAgo := time.Now().AddDate(0, 0, -1).Unix()
+
+		// execute
+		hasPassed := utils.DayPassed(fmt.Sprintf("%d", oneDayAgo))
+
+		// verify
+		assert.True(t, hasPassed)
+	})
+
+	t.Run("should return false if a day has not passed", func(t *testing.T) {
+		// setup
+		now := time.Now().Unix()
+
+		// execute
+		hasPassed := utils.DayPassed(fmt.Sprintf("%d", now))
+
+		// verify
+		assert.False(t, hasPassed)
+	})
+}
+
+func TestParseTime(t *testing.T) {
+	t.Run("should parse time and return today's date", func(t *testing.T) {
+		// setup
+		now := time.Now()
+		today := now.Format("02 Jan 06 15:04")
+
+		// execute
+		parsedTime, _ := utils.ParseTime(today)
+
+		// verify
+		assert.Contains(t, parsedTime, "Today")
+	})
+
+	t.Run("should parse time and return yesterday's date", func(t *testing.T) {
+		// setup
+		yesterday := time.Now().AddDate(0, 0, -1)
+		yesterdayString := yesterday.Format("02 Jan 06 15:04")
+
+		// execute
+		parsedTime, _ := utils.ParseTime(yesterdayString)
+
+		// verify
+		assert.Contains(t, parsedTime, "Yesterday")
+	})
+
+	t.Run("should parse time and return the date", func(t *testing.T) {
+		// setup
+		twoDaysAgo := time.Now().AddDate(0, 0, -2)
+		twoDaysAgoString := twoDaysAgo.Format("02 Jan 06 15:04")
+
+		// execute
+		parsedTime, _ := utils.ParseTime(twoDaysAgoString)
+
+		// verify
+		assert.Equal(t, twoDaysAgoString, parsedTime)
+	})
+
+	t.Run("should return unknown if the time is invalid", func(t *testing.T) {
+		// execute
+		parsedTime, _ := utils.ParseTime("invalid-time")
+
+		// verify
+		assert.Equal(t, "unnkown", parsedTime)
+	})
+}

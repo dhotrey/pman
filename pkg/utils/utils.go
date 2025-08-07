@@ -128,7 +128,7 @@ func DayPassed(t string) bool {
 	oneDay := 86400
 	now := time.Now().Unix()
 	recTime, _ := strconv.ParseInt(t, 10, 64)
-	return now-recTime > int64(oneDay)
+	return now-recTime >= int64(oneDay)
 }
 
 func ParseTime(tstr string) (string, int64) {

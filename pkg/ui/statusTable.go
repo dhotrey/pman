@@ -16,7 +16,7 @@ import (
 	"github.com/theredditbandit/pman/pkg/utils"
 )
 
-var RenderTable = func(data map[string]string, refreshLastEditedTime bool) error {
+var RenderTable = func(dbname string, data map[string]string, refreshLastEditedTime bool) error {
 	var tableData [][]string
 	var lastEdited string
 	var timestamp int64
@@ -27,7 +27,7 @@ var RenderTable = func(data map[string]string, refreshLastEditedTime bool) error
 			return err
 		}
 	} else {
-		rec, err := db.GetRecord(db.DBName, "lastRefreshTime", c.ConfigBucket)
+		rec, err := db.GetRecord(dbname, "lastRefreshTime", c.ConfigBucket)
 		if err != nil { // lastRefreshTime key does not exist in db
 			refreshLastEditedTime = true
 			err := utils.UpdateLastEditedTime()
@@ -45,21 +45,21 @@ var RenderTable = func(data map[string]string, refreshLastEditedTime bool) error
 	}
 	for p, status := range data {
 		// log.Println("===============================================")
-		alias, err := db.GetRecord(db.DBName, p, c.ProjectAliasBucket)
+		alias, err := db.GetRecord(dbname, p, c.ProjectAliasBucket)
 		// log.Println("after get record func", "  err=", err)
 		// log.Println("p=", p)
 		// log.Println("status=", status)
 		if refreshLastEditedTime {
-			t := utils.GetLastModifiedTime(db.DBName, p)
+			t := utils.GetLastModifiedTime(dbname, p)
 			lastEdited, timestamp = utils.ParseTime(t)
 			rec := map[string]string{p: fmt.Sprintf("%s-%d", lastEdited, timestamp)}
-			err := db.WriteToDB(db.DBName, rec, c.LastUpdatedBucket)
+			err := db.WriteToDB(dbname, rec, c.LastUpdatedBucket)
 			if err != nil {
 				return err
 			}
 		} else {
 			// log.Println("b4 key nf error", "p=", p, "bucket=", c.LastUpdatedBucket)
-			lE, err := db.GetRecord(db.DBName, p, c.LastUpdatedBucket)
+			lE, err := db.GetRecord(dbname, p, c.LastUpdatedBucket)
 			if err != nil {
 				log.Println("aftert key nf error")
 				return err

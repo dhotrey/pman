@@ -13,9 +13,6 @@ import (
 func Test_SetCmd(t *testing.T) {
 	t.Run("Test set status of a project with no alias", func(t *testing.T) {
 		setup(t)
-		t.Cleanup(func() {
-			teardown(t)
-		})
 
 		// execute
 		rootCmd.SetArgs([]string{"set", projectName, status})
@@ -30,9 +27,6 @@ func Test_SetCmd(t *testing.T) {
 
 	t.Run("Test set status of a project using its alias", func(t *testing.T) {
 		setup(t)
-		t.Cleanup(func() {
-			teardown(t)
-		})
 
 		// setup alias
 		rootCmd.SetArgs([]string{"alias", projectName, aliasName})
@@ -52,9 +46,6 @@ func Test_SetCmd(t *testing.T) {
 
 	t.Run("Test set status of a project that has an alias, using its project name", func(t *testing.T) {
 		setup(t)
-		t.Cleanup(func() {
-			teardown(t)
-		})
 
 		// setup alias
 		rootCmd.SetArgs([]string{"alias", projectName, aliasName})

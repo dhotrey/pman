@@ -17,21 +17,20 @@ import (
 func Test_StatusCmd(t *testing.T) {
 	t.Run("Test get status of a project with no alias", func(t *testing.T) {
 		setup(t)
-		t.Cleanup(func() {
-			teardown(t)
-		})
 
 		// get current status
 		currentStatus, err := db.GetRecord(dbname, projectName, c.StatusBucket)
 		require.NoError(t, err)
 
 		// execute
+		originalStdout := os.Stdout
 		r, w, _ := os.Pipe()
 		os.Stdout = w
 		rootCmd.SetArgs([]string{"status", projectName})
 		err = rootCmd.Execute()
 		require.NoError(t, err)
 		w.Close()
+		os.Stdout = originalStdout
 		out, _ := io.ReadAll(r)
 
 		// verify
@@ -41,9 +40,6 @@ func Test_StatusCmd(t *testing.T) {
 
 	t.Run("Test get status of a project using its alias", func(t *testing.T) {
 		setup(t)
-		t.Cleanup(func() {
-			teardown(t)
-		})
 
 		// setup alias
 		rootCmd.SetArgs([]string{"alias", projectName, aliasName})
@@ -55,12 +51,14 @@ func Test_StatusCmd(t *testing.T) {
 		require.NoError(t, err)
 
 		// execute
+		originalStdout := os.Stdout
 		r, w, _ := os.Pipe()
 		os.Stdout = w
 		rootCmd.SetArgs([]string{"status", aliasName})
 		err = rootCmd.Execute()
 		require.NoError(t, err)
 		w.Close()
+		os.Stdout = originalStdout
 		out, _ := io.ReadAll(r)
 
 		// verify
@@ -70,9 +68,6 @@ func Test_StatusCmd(t *testing.T) {
 
 	t.Run("Test get status of a project that has an alias, using its project name", func(t *testing.T) {
 		setup(t)
-		t.Cleanup(func() {
-			teardown(t)
-		})
 
 		// setup alias
 		rootCmd.SetArgs([]string{"alias", projectName, aliasName})
@@ -84,12 +79,14 @@ func Test_StatusCmd(t *testing.T) {
 		require.NoError(t, err)
 
 		// execute
+		originalStdout := os.Stdout
 		r, w, _ := os.Pipe()
 		os.Stdout = w
 		rootCmd.SetArgs([]string{"status", projectName})
 		err = rootCmd.Execute()
 		require.NoError(t, err)
 		w.Close()
+		os.Stdout = originalStdout
 		out, _ := io.ReadAll(r)
 
 		// verify
