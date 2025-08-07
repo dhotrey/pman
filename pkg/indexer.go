@@ -92,7 +92,7 @@ func indexDir(path string) (map[string]string, error) {
 
 	entries, err := os.ReadDir(path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not read directory %s: %w", path, err)
 	}
 
 	for _, entry := range entries {
