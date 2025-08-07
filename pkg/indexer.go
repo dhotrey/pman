@@ -112,7 +112,7 @@ func indexDir(path string) (map[string]string, error) {
 				(!subEntry.IsDir() && strings.Contains(strings.ToLower(subEntry.Name()), identifier)) {
 				absPath, err := filepath.Abs(subDirPath)
 				if err != nil {
-					log.Printf("could not get absolute path for %s: %v", subDirPath, err)
+					errs = append(errs, fmt.Errorf("could not get absolute path for %s: %w", subDirPath, err))
 					break // break from inner loop
 				}
 				projDirs[absPath] = "indexed"
