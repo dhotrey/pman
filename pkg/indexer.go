@@ -45,15 +45,30 @@ func InitDirs(args []string) error {
 	projectStatusMap := make(map[string]string)
 	projectPathMap := make(map[string]string)
 	projectLastModTimeMap := make(map[string]string)
+
+	existingProjects, err := db.GetAllRecords(db.DBName, c.StatusBucket)
+	if err != nil {
+		if errors.Is(err, db.ErrBucketNotFound) {
+			existingProjects = make(map[string]string)
+		} else {
+			log.Print(err)
+			return err
+		}
+	}
+
 	for k, v := range projDirs { // k : full project path, v : project status ,
 		projectName := filepath.Base(k)
-		projectStatusMap[projectName] = v // filepath.Base(k) : project name
+		if _, ok := existingProjects[projectName]; !ok {
+			projectStatusMap[projectName] = v // filepath.Base(k) : project name
+		}
 		projectPathMap[projectName] = k
 	}
-	err = db.WriteToDB(db.DBName, projectStatusMap, c.StatusBucket)
-	if err != nil {
-		log.Print(err)
-		return err
+	if len(projectStatusMap) > 0 {
+		err = db.WriteToDB(db.DBName, projectStatusMap, c.StatusBucket)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
 	}
 	err = db.WriteToDB(db.DBName, projectPathMap, c.ProjectPaths)
 	if err != nil {
