@@ -433,6 +433,6 @@ func TestParseTime(t *testing.T) {
 		parsedTime, _ := utils.ParseTime("invalid-time")
 
 		// verify
-		assert.Equal(t, "unnkown", parsedTime)
+		assert.Equal(t, "unknown", parsedTime)
 	})
 }
