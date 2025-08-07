@@ -36,7 +36,7 @@ var lsCmd = &cobra.Command{
 			fmt.Println("Filtering by status : ", filterFlag)
 			data = utils.FilterByStatuses(data, strings.Split(filterFlag, ","))
 		}
-		return ui.RenderTable(data, refreshLastEditTime)
+		return ui.RenderTable(db.DBName, data, refreshLastEditTime)
 	},
 }
 

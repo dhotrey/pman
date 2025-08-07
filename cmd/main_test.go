@@ -17,6 +17,12 @@ const (
 )
 
 func setup(t *testing.T) {
+	t.Cleanup(func() {
+		err := db.DeleteDb(dbname)
+		require.NoError(t, err)
+		err = os.RemoveAll(testDir)
+		require.NoError(t, err)
+	})
 	err := os.MkdirAll(testDir+"/"+projectName, 0755)
 	require.NoError(t, err)
 	_, err = os.Create(testDir + "/" + projectName + "/README.md")
@@ -27,16 +33,8 @@ func setup(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func teardown(t *testing.T) {
-	err := db.DeleteDb(dbname)
-	require.NoError(t, err)
-	err = os.RemoveAll(testDir)
-	require.NoError(t, err)
-}
-
 func TestInitAndAdd_PreservesStatus(t *testing.T) {
 	setup(t)
-	defer teardown(t)
 
 	// Set status to active
 	rootCmd.SetArgs([]string{"set", projectName, "active"})

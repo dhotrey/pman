@@ -19,7 +19,7 @@ func mockGetAllRecords(dbname, bucketName string) (map[string]string, error) {
 }
 
 // Mocking the ui.RenderTable function
-func mockRenderTable(data map[string]string, refreshLastEditedTime bool) error {
+func mockRenderTable(dbname string, data map[string]string, refreshLastEditedTime bool) error {
 	if data == nil {
 		return errors.New("render error")
 	}

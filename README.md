@@ -64,6 +64,22 @@ Launch pman in interactive mode using `pman i`
 ![image](https://github.com/theredditbandit/pman/assets/85390033/c9f9f836-d1b3-45c0-a36f-eda7ed842e1a)
 
 
+## Running Tests
+
+To run the tests for this project, use the following command:
+
+```shell
+go test -v ./...
+```
+
+### Coverage
+
+To generate a coverage report, use the following command:
+
+```shell
+go test -coverprofile=coverage.out ./... && go tool cover -html=coverage.out
+```
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=theredditbandit/pman&type=Date)](https://star-history.com/#theredditbandit/pman&Date)
