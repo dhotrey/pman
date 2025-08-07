@@ -227,4 +227,4 @@ output:
   # Default: true
   # Note: unique in this case means that you can have at most 1 issue per line of code.
   # one issue with a given line and we want to see them all at once.
-  uniq-by-line: false
+  # uniq-by-line: false
