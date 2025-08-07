@@ -36,14 +36,16 @@ var setCmd = &cobra.Command{
 			fmt.Println("Please provide a directory name")
 			return ErrBadUsageSetCmd
 		}
-		var pname string
-		alias := args[0]
+		pname := args[0]
 		status := args[1]
-		project, err := db.GetRecord(db.DBName, alias, c.ProjectAliasBucket)
+
+		// check if user has supplied an alias instead of actual project name
+		proj, err := db.GetRecord(db.DBName, pname, c.ProjectAliasBucket)
 		if err == nil {
-			pname = project
-		} else {
-			pname = alias
+			_, err2 := db.GetRecord(db.DBName, proj, c.StatusBucket)
+			if err2 == nil {
+				pname = proj
+			}
 		}
 		err = db.UpdateRec(db.DBName, pname, status, c.StatusBucket)
 		if err != nil {
