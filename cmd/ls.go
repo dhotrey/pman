@@ -3,7 +3,9 @@ package cmd
 import (
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 
 	c "github.com/theredditbandit/pman/constants"
@@ -20,6 +22,10 @@ var lsCmd = &cobra.Command{
     `,
 	Aliases: []string{"l"},
 	RunE: func(cmd *cobra.Command, _ []string) error {
+		s := spinner.New(spinner.CharSets[35], 100*time.Millisecond)
+		s.Suffix = " Compiling..."
+		s.Start()
+		defer s.Stop()
 		filterFlag, _ := cmd.Flags().GetString("f")
 		refreshLastEditTime, _ := cmd.Flags().GetBool("r")
 		data, err := db.GetAllRecords(db.DBName, c.StatusBucket)

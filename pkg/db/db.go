@@ -121,8 +121,7 @@ func GetRecord(dbname, key, bucketName string) (string, error) {
 	return rec, nil
 }
 
-// GetAllRecords returns all the records from the specified bucket as a dictionary
-func GetAllRecords(dbname, bucketName string) (map[string]string, error) {
+var GetAllRecords = func(dbname, bucketName string) (map[string]string, error) {
 	dbLoc, err := GetDBLoc(dbname)
 	if err != nil {
 		log.Printf("%v : %v \n", ErrOpenDB, err)

@@ -16,8 +16,7 @@ import (
 	"github.com/theredditbandit/pman/pkg/utils"
 )
 
-// RenderTable: renders the given data as a table
-func RenderTable(data map[string]string, refreshLastEditedTime bool) error {
+var RenderTable = func(data map[string]string, refreshLastEditedTime bool) error {
 	var tableData [][]string
 	var lastEdited string
 	var timestamp int64
