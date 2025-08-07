@@ -47,9 +47,13 @@ func InitDirs(args []string) error {
 	projectLastModTimeMap := make(map[string]string)
 
 	existingProjects, err := db.GetAllRecords(db.DBName, c.StatusBucket)
-	if err != nil && !errors.Is(err, db.ErrBucketNotFound) {
-		log.Print(err)
-		return err
+	if err != nil {
+		if errors.Is(err, db.ErrBucketNotFound) {
+			existingProjects = make(map[string]string)
+		} else {
+			log.Print(err)
+			return err
+		}
 	}
 
 	for k, v := range projDirs { // k : full project path, v : project status ,
